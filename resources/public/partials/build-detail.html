@@ -1,5 +1,6 @@
 <div class="row">
   <h2 ng-hide="buildinfo.projects">Loading...</h2>
+  <div ng-bind-html-unsafe="error.data"></div>
   <div ng-show="buildinfo.projects">
   <h2>Projects in Build</h2>
   <h3>10 most recent commits in each</h3>

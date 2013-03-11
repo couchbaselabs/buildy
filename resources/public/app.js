@@ -43,6 +43,8 @@ function BuildCompareCtrl($scope, $http, $routeParams, $rootScope) {
                                   $routeParams.buildb);
     $scope.comparisons = comparisonreq.then(function(resp) {
         return resp.data;
+    }, function (error) {
+        $scope.error = error;
     });
 }
 
@@ -51,6 +53,8 @@ function BuildDetailCtrl($scope, $http, $routeParams, $rootScope) {
     var buildinforeq = $http.get('/manifest-info/' + $routeParams.build);
     $scope.buildinfo = buildinforeq.then(function(resp) {
         return resp.data;
+    }, function(error) {
+        $scope.error = error;
     });
 }
 

@@ -1,25 +1,28 @@
 <div class="row">
   <h2 ng-hide="comparisons">Loading...</h2>
+  <div ng-bind-html-unsafe="error.data"></div>
   <div ng-show="comparisons">
     <ul>
       <li ng-repeat="comparison in comparisons">
 	<div ng-show="comparison.onlya[0]">
-	  {{comparison.name}} - commits only in {{builda}}
-	  <ul>
-	    <li ng-repeat="commit in comparison.onlya">
-	      <i>{{commit.commitTime * 1000 | calDate}}</i>
-	      <img class="gravatar" src="http://www.gravatar.com/avatar/{{commit.author.gravatar}}?s=16"><b>{{commit.author.name}}</b> &ndash; {{commit.shortMessage}}
-	    </li>
-	  </ul>
+	  <p>{{comparison.name}} - commits only in <strong>{{builda}}</strong>
+	    <ul>
+	      <li ng-repeat="commit in comparison.onlya">
+		<i>{{commit.commitTime * 1000 | calDate}}</i>
+		<img class="gravatar" src="http://www.gravatar.com/avatar/{{commit.author.gravatar}}?s=16"><b>{{commit.author.name}}</b> &ndash; {{commit.shortMessage}}
+	      </li>
+	    </ul>
+	  </p>
 	</div>
 	<div ng-show="comparison.onlyb[0]">
-	  {{projectname}} - commits only in {{buildb}}
-	  <ul>
-	    <li ng-repeat="commit in comparison.onlyb">
-	      <i>{{commit.commitTime * 1000 | calDate}}</i>
-	      <img class="gravatar" src="http://www.gravatar.com/avatar/{{commit.author.gravatar}}?s=16"><b>{{commit.author.name}}</b> &ndash; {{commit.shortMessage}}
-	    </li>
-	  </ul>
+	  <p>{{projectname}} - commits only in <strong>{{buildb}}</strong>
+	    <ul>
+	      <li ng-repeat="commit in comparison.onlyb">
+		<i>{{commit.commitTime * 1000 | calDate}}</i>
+		<img class="gravatar" src="http://www.gravatar.com/avatar/{{commit.author.gravatar}}?s=16"><b>{{commit.author.name}}</b> &ndash; {{commit.shortMessage}}
+	      </li>
+	    </ul>
+	  </p>
 	</div>
       </li>
     </ul>
