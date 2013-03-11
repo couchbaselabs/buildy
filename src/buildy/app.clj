@@ -74,6 +74,9 @@
         build (get-in rq [:params :build])]
     (proxy-to (str cbfs-base "builds/" build) rq)))
 
+(defn on-startup []
+  (appcfg)) ; load up couchbase client and stuff)
+
 (defroutes handler
   (GET "/allbuilds" [] (cbfs-builds-list))
   (GET "/get/:build" rq (download-build rq))
