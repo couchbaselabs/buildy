@@ -15,4 +15,5 @@
                  [clj-jgit "0.2.1"] ; Git
                  [apage43/cbdrawer "0.1.0"] ; Couchbase
                  [com.taoensso/timbre "1.5.2"] ; Logging
+                 [me.raynes/conch "0.5.0"] ; Shellin'
                  ])

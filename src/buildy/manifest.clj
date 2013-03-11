@@ -4,11 +4,16 @@
            [org.eclipse.jgit.transport RefSpec]
            java.security.MessageDigest)
   (:require [clj-jgit.porcelain :as g]
+            [taoensso.timbre :as timbre
+             :refer [spy trace debug info warn error]]
+            [me.raynes.conch :refer [programs]]
             [clojure.data.xml :as dxml]
             [clojure.java.io :as io]
             [clj-http.client :as http]))
 
 (defonce git-dir (atom (str (System/getenv "HOME") "/buildy-git-cache")))
+
+(programs git)
 
 (defn only-tag [coll tag]
   (filter #(= tag (:tag %)) coll))
@@ -49,7 +54,9 @@
         (.getRepository)
         (.getConfig)
         (as-> config
-              (do (.setString config "remote" remote-name "url" remote-url) 
+              (do (.setString config "remote" remote-name "url" remote-url)
+                  (.setString config "remote" remote-name "fetch"
+                              (str"+refs/heads/*:refs/remotes/" remote-name "/*"))
                   (.save config))))))
 
 (defn clone-or-update
@@ -62,16 +69,8 @@
     (if (.exists project-dir-f)
       (g/with-repo project-dir
         (setup-remote repo remote project)
-        (try (-> repo
-                 (.fetch)
-                 (.setRemote remote-name)
-                 ; i have no idea what i'm doing
-                 ;(.setRefSpecs [(RefSpec. (str "+refs/head/" project ":/*:refs/remotes/"
-                 ;                              remote-name "/*"))])
-                 (.setRefSpecs [(RefSpec. "+refs/heads/master")])
-                 (.call))
-          (catch Exception e
-            (str e))))
+        (info "Git remote update: "
+              (git (str "--git-dir=" @git-dir "/" project-name "/.git") "remote" "update")))
       ;else
       (do (g/git-clone remote-url project-dir)
           (g/with-repo project-dir (setup-remote repo remote project))))))
