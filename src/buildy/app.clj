@@ -77,6 +77,10 @@
 (defn on-startup []
   (appcfg)) ; load up couchbase client and stuff)
 
+(defn on-teardown []
+  (cb/shutdown (:cbfs-bucket (appcfg)))
+  (reset! appcfg* nil))
+
 (defroutes handler
   (GET "/allbuilds" [] (cbfs-builds-list))
   (GET "/get/:build" rq (download-build rq))

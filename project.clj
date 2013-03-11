@@ -5,7 +5,8 @@
             :url "http://www.wtfpl.net/"}
   :profiles {:dev {:plugins [[lein-ring "0.8.3"]]}}
   :ring {:handler buildy.app/handler
-         :init buildy.app/on-startup}
+         :init buildy.app/on-startup
+         :destroy buildy.app/on-teardown}
   :dependencies [[org.clojure/clojure "1.5.0"]
                  [org.clojure/data.xml "0.0.7"] ; XML
                  [cheshire "5.0.2"] ; JSON
