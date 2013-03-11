@@ -1,7 +1,8 @@
 (ns buildy.manifest
   "Working with our repo manifests and git stuff"
   (:import [java.nio.file Path Paths]
-           [org.eclipse.jgit.transport RefSpec])
+           [org.eclipse.jgit.transport RefSpec]
+           java.security.MessageDigest)
   (:require [clj-jgit.porcelain :as g]
             [clojure.data.xml :as dxml]
             [clojure.java.io :as io]
@@ -11,6 +12,16 @@
 
 (defn only-tag [coll tag]
   (filter #(= tag (:tag %)) coll))
+
+(defn- md5sum
+  [^String s]
+  (let [digest ^MessageDigest (MessageDigest/getInstance "MD5")]
+    (.reset digest)
+    (.toString (BigInteger. 1 (.digest digest (.getBytes s "UTF-8"))) 16)))
+
+(defn- gravhash
+  [^String email]
+  (-> email .trim .toLowerCase md5sum))
 
 (defn read-manifest
   "Parse manifest XML"
@@ -79,7 +90,8 @@
         author-beaned (bean author)]
     (merge (select-keys beaned [:shortMessage :commitTime :name])
            {:author
-            (select-keys author-beaned [:emailAddress :name])})))
+            (merge (select-keys author-beaned [:emailAddress :name])
+                   {:gravatar (gravhash (:emailAddress author-beaned))})})))
 
 (defn commits-for-project [project]
   (g/with-repo (str @git-dir "/" (:name project))

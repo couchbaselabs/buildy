@@ -18,3 +18,9 @@
     text-decoration: underline;
 }
 
+.gravatar {
+    display: inline;
+    margin-right: .5em;
+    margin-left: .5em;
+}
+

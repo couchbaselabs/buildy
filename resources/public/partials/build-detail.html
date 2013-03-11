@@ -9,7 +9,7 @@
       <ul>
 	<li ng-repeat="commit in project.log">
 	  <i>{{commit.commitTime * 1000 | calDate}}</i>
-	  <b>{{commit.author.name}}</b> &ndash; {{commit.shortMessage}}
+	  <img class="gravatar" src="http://www.gravatar.com/avatar/{{commit.author.gravatar}}?s=16"><b>{{commit.author.name}}</b> &ndash; {{commit.shortMessage}}
 	</li>
       </ul>
     </li>
