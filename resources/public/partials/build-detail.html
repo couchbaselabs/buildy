@@ -1,0 +1,18 @@
+<div class="row">
+  <h2 ng-hide="buildinfo.projects">Loading...</h2>
+  <div ng-show="buildinfo.projects">
+  <h2>Projects in Build</h2>
+  <h3>10 most recent commits in each</h3>
+  <ul>
+    <li ng-repeat="(projectname, project) in buildinfo.projects">
+      {{projectname}} - commit {{project.revision}}
+      <ul>
+	<li ng-repeat="commit in project.log">
+	  <i>{{commit.commitTime * 1000 | calDate}}</i>
+	  <b>{{commit.author.name}}</b> &ndash; {{commit.shortMessage}}
+	</li>
+      </ul>
+    </li>
+  </ul>
+</div>
+</div>

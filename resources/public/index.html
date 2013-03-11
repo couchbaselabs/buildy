@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html ng-app="buildboard">
+  <head>
+    <meta charset="utf-8">
+    <title>{{title}} - buildy</title>
+    <script src="js/vendor/jquery.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.min.js"></script>
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link rel="stylesheet" href="css/foundation.css" />
+    <link rel="stylesheet" href="css/font-awesome.min.css" />
+    <link rel="stylesheet" href="app.css" />
+    <script src="js/vendor/custom.modernizr.js"></script>
+  </head>
+  <body>
+    <div class="row">
+      <div class="small-12 columns">
+	<h1>{{title}}</h1>
+      </div>
+    </div>
+    <div class="small-12 columns" ng-view>
+    </div>
+    <script src="js/foundation.min.js"></script>
+    <script src="lodash.min.js"></script>
+    <script src="moment.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

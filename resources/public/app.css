@@ -1,0 +1,20 @@
+
+.filtering .button {
+    background-color: #777777;
+    color: #ddd;
+}
+
+.filtering .pressed {
+    background-color: #22a481;
+    color: #fff;
+}
+
+.buildlink {
+    color: #000;
+}
+
+.buildlink:hover {
+    color: #000
+    text-decoration: underline;
+}
+

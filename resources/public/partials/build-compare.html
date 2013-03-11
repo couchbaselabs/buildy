@@ -1,0 +1,27 @@
+<div class="row">
+  <h2 ng-hide="comparisons">Loading...</h2>
+  <div ng-show="comparisons">
+    <ul>
+      <li ng-repeat="comparison in comparisons">
+	<div ng-show="comparison.onlya[0]">
+	  {{comparison.name}} - commits only in {{builda}}
+	  <ul>
+	    <li ng-repeat="commit in comparison.onlya">
+	      <i>{{commit.commitTime * 1000 | calDate}}</i>
+	      <b>{{commit.author.name}}</b> &ndash; {{commit.shortMessage}}
+	    </li>
+	  </ul>
+	</div>
+	<div ng-show="comparison.onlyb[0]">
+	  {{projectname}} - commits only in {{buildb}}
+	  <ul>
+	    <li ng-repeat="commit in comparison.onlyb">
+	      <i>{{commit.commitTime * 1000 | calDate}}</i>
+	      <b>{{commit.author.name}}</b> &ndash; {{commit.shortMessage}}
+	    </li>
+	  </ul>
+	</div>
+      </li>
+    </ul>
+  </div>
+</div>
