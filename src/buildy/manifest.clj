@@ -1,7 +1,6 @@
 (ns buildy.manifest
   "Working with our repo manifests and git stuff"
-  (:import [java.nio.file Path Paths]
-           [org.eclipse.jgit.transport RefSpec]
+  (:import [org.eclipse.jgit.transport RefSpec]
            java.security.MessageDigest)
   (:require [clj-jgit.porcelain :as g]
             [taoensso.timbre :as timbre
@@ -126,41 +125,3 @@
                                                     (map niceify-commit
                                                          (take 10 (commits-for-project project))))])
                              projects)))))
-
-(comment
-  (def tmf
-    (with-open [ms (io/input-stream (str "http://bruce.cbfs.hq.couchbase.com:3000/manifest/"
-                                         "couchbase-server-community_x86_2.0.2-731-rel.deb"))]
-      (read-manifest ms)))
-
-  (let [manifest tmf
-        projname "couchdb"
-        project (-> manifest :projects (get projname))
-        remote ((:remotes manifest) (:remote project))]
-    (clone-or-update project remote))
-
-  (def cdbdir (str @git-dir "/couchdb"))
-
-  (g/with-repo cdbdir
-    (-> repo
-        (.getRepository)
-        (.getConfig)
-        (as-> config
-              (do (.setString config "remote" "test" "url" "http://example.com/test.git")
-                  (.save config)))))
-
-  (def c (clone-projects tmf))
-
-  (def testc (g/with-repo cdbdir
-    (-> (g/git-log repo (:revision ((:projects tmf) "couchdb")))
-        (->>
-          first))))
-
-  (pprint (bean testc))
-  (do c)
-  (-> c
-      vals
-      (->> (map deref)
-           (map #(.getTrackingRefUpdates %))
-           ))
-  )
