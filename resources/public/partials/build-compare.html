@@ -1,12 +1,13 @@
 <div class="row">
-  <h2 ng-hide="comparisons">Loading...</h2>
+  <h2 ng-hide="comparisons"><i class="icon-spinner icon-spin"></i> Comparing Builds</h2>
   <div ng-bind-html-unsafe="error.data"></div>
   <div ng-show="comparisons">
     <h2 ng-show="comparisons.empty">No git differences between these builds.</h2>
-    <ul ng-hide="comparisons.empty">
+    <ul ng-hide="comparisons.empty" class="square">
       <li ng-repeat="comparison in comparisons">
+	<h4>{{comparison.name}}</h4>
 	<div ng-show="comparison.onlya[0]">
-	  <p>{{comparison.name}} - commits only in <strong>{{builda}}</strong>
+	  <p>commits only in <strong>{{builda}}</strong>
 	    <ul>
 	      <li ng-repeat="commit in comparison.onlya">
 		<i>{{commit.commitTime * 1000 | calDate}}</i>
@@ -16,7 +17,7 @@
 	  </p>
 	</div>
 	<div ng-show="comparison.onlyb[0]">
-	  <p>{{projectname}} - commits only in <strong>{{buildb}}</strong>
+	  <p>commits only in <strong>{{buildb}}</strong>
 	    <ul>
 	      <li ng-repeat="commit in comparison.onlyb">
 		<i>{{commit.commitTime * 1000 | calDate}}</i>
