@@ -42,6 +42,9 @@ function BuildCompareCtrl($scope, $http, $routeParams, $rootScope) {
     var comparisonreq = $http.get('/comparison-info/' + $routeParams.builda + '/' +
                                   $routeParams.buildb);
     $scope.comparisons = comparisonreq.then(function(resp) {
+        if(resp.data.length === 0) {
+            return {empty: true};
+        }
         return resp.data;
     }, function (error) {
         $scope.error = error;

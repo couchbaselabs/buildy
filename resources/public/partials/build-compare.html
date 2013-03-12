@@ -2,7 +2,8 @@
   <h2 ng-hide="comparisons">Loading...</h2>
   <div ng-bind-html-unsafe="error.data"></div>
   <div ng-show="comparisons">
-    <ul>
+    <h2 ng-show="comparisons.empty">No git differences between these builds.</h2>
+    <ul ng-hide="comparisons.empty">
       <li ng-repeat="comparison in comparisons">
 	<div ng-show="comparison.onlya[0]">
 	  <p>{{comparison.name}} - commits only in <strong>{{builda}}</strong>
