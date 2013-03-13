@@ -40,14 +40,15 @@ bbmodule.factory('buildyRT', function($http, $timeout) {
 
     function poll() {
         $http.get("/scrape-queue").success(function(resp) {
-            if(resp !== null) {
+            if(resp !== null && resp !== "null") {
                 console.log("got ", resp);
                 recentMessages = recentMessages.concat(resp);
                 poll();
             } else {
-                console.log("got null");
+                console.log("got a null");
                 //should only get false/nil if we don't have a queue.
                 $http.get("/ensure-queue").success(function(resp) {
+                    poll();
                 });
             }
         }).error(function(err) {
