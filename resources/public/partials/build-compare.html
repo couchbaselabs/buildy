@@ -18,7 +18,7 @@
       </ul>
     </div>
     <h2 ng-show="diff.empty">No git differences between common projects in these builds.</h2>
-    <h3>Projects in common</h3>
+    <h3 ng-hide="diff.empty">Projects in common</h3>
     <ul ng-hide="diff.empty">
       <li ng-repeat="comparison in diff.compared">
 	<h4>{{comparison.name}}</h4>
