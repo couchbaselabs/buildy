@@ -40,5 +40,4 @@
   [handler]
   (fn [{:keys [session] :as rq}]
     (with-queue (:queue session)
-      (when-not (:queue session) (info "No queue in session..."))
       (handler rq))))

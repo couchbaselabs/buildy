@@ -86,7 +86,10 @@
 (defroutes app-routes
   (GET "/ensure-queue" {:keys [session]}
        (assoc (json-response "OK") :session
-              {:queue (or (:queue session)
+              {:headers {"cache-control" "no-cache, no-store, must-revalidate"
+                         "pragma" "no-cache"
+                         "expires" 0}
+               :queue (or (:queue session)
                           (rt/new-queue))}))
   (GET "/scrape-queue" [] (json-response (rt/collect-messages)))
   (GET "/allbuilds" [] (cbfs-builds-list))

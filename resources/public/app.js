@@ -40,13 +40,14 @@ bbmodule.factory('buildyRT', function($http, $timeout) {
 
     function poll() {
         $http.get("/scrape-queue").success(function(resp) {
-            if(resp) {
+            if(resp !== null) {
+                console.log("got ", resp);
                 recentMessages = recentMessages.concat(resp);
                 poll();
             } else {
+                console.log("got null");
                 //should only get false/nil if we don't have a queue.
                 $http.get("/ensure-queue").success(function(resp) {
-                    poll();
                 });
             }
         }).error(function(err) {
@@ -111,7 +112,7 @@ function BuildDetailCtrl($scope, $http, $routeParams, $rootScope, buildyRT) {
     });
 }
 
-function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope) {
+function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, buildyRT) {
     $rootScope.title = "All Builds";
     var viewresults = $http.get('/allbuilds');
     $scope.builds = viewresults.then(function(resp) {

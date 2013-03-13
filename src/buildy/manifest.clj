@@ -95,7 +95,7 @@
                    {:gravatar (gravhash (:emailAddress author-beaned))})})))
 
 (defn commits-for-project [project]
-  (rt/place-advisory {:kind "git" :message (str "Examining git commits for " (pr-str project))})
+  (rt/place-advisory {:kind "git" :message (str "Examining git commits for " (:name project))})
   (g/with-repo (str @git-dir "/" (:name project))
     (g/git-log repo (:revision project))))
 
