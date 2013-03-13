@@ -1,13 +1,29 @@
 <div class="row">
-  <h2 ng-hide="comparisons"><i class="icon-cog icon-spin"></i> Comparing Builds</h2>
+  <h2 ng-hide="diff"><i class="icon-cog icon-spin"></i> Comparing Builds</h2>
+  <div ng-hide="diff">
+    <div ng-include="'/partials/gitstatus.html'"></div>
+  </div>
   <div ng-bind-html-unsafe="error.data"></div>
-  <div ng-show="comparisons">
-    <h2 ng-show="comparisons.empty">No git differences between these builds.</h2>
-    <ul ng-hide="comparisons.empty" class="square">
-      <li ng-repeat="comparison in comparisons">
+  <div ng-show="diff">
+    <div ng-show="diff.projectsonlya">
+      <h4>Projects only in {{builda}}</h4>
+      <ul class="inline-list">
+	<li ng-repeat="p in diff.projectsonlya"><strong>{{p}}</strong></li>
+      </ul>
+    </div>
+    <div ng-show="diff.projectsonlyb">
+      <h4>Projects only in {{buildb}}</h4>
+      <ul class="inline-list">
+	<li ng-repeat="p in diff.projectsonlyb"><strong>{{p}}</strong></li>
+      </ul>
+    </div>
+    <h2 ng-show="diff.empty">No git differences between common projects in these builds.</h2>
+    <h3>Projects in common</h3>
+    <ul ng-hide="diff.empty">
+      <li ng-repeat="comparison in diff.compared">
 	<h4>{{comparison.name}}</h4>
 	<div ng-show="comparison.onlya[0]">
-	  <p>commits only in <strong>{{builda}}</strong>
+	  <p>Commits only in <strong>{{builda}}</strong>
 	    <ul>
 	      <li ng-repeat="commit in comparison.onlya">
 		<i>{{commit.commitTime * 1000 | calDate}}</i>
@@ -17,7 +33,7 @@
 	  </p>
 	</div>
 	<div ng-show="comparison.onlyb[0]">
-	  <p>commits only in <strong>{{buildb}}</strong>
+	  <p>Commits only in <strong>{{buildb}}</strong>
 	    <ul>
 	      <li ng-repeat="commit in comparison.onlyb">
 		<i>{{commit.commitTime * 1000 | calDate}}</i>

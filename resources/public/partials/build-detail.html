@@ -1,5 +1,8 @@
 <div class="row">
   <h2 ng-hide="buildinfo.projects"><i class="icon-cog icon-spin"></i> Grabbing Git Data</h2>
+  <div ng-hide="buildinfo.projects">
+    <div ng-include="'/partials/gitstatus.html'"></div>
+  </div>
   <div ng-bind-html-unsafe="error.data"></div>
   <div ng-show="buildinfo.projects">
   <h2>Projects in Build</h2>

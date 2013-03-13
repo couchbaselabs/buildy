@@ -1,5 +1,6 @@
 (ns buildy.app
-  (:use compojure.core)
+  (:use compojure.core
+        ring.middleware.session)
   (:require [compojure.route :as route]
             [taoensso.timbre :as timbre
              :refer [spy trace debug info warn error]]
@@ -10,6 +11,7 @@
             [cbdrawer.client :as cb]
             [cbdrawer.transcoders :refer [json-transcoder]]
             [cbdrawer.view :as cb-view]
+            [buildy.realtime :as rt]
             [buildy.manifest :as mf]))
 
 (defonce ^:private appcfg* (atom nil))
@@ -81,7 +83,12 @@
   (cb/shutdown (:cbfs-bucket (appcfg)))
   (reset! appcfg* nil))
 
-(defroutes handler
+(defroutes app-routes
+  (GET "/ensure-queue" {:keys [session]}
+       (assoc (json-response "OK") :session
+              {:queue (or (:queue session)
+                          (rt/new-queue))}))
+  (GET "/scrape-queue" [] (json-response (rt/collect-messages)))
   (GET "/allbuilds" [] (cbfs-builds-list))
   (GET "/get/:build" rq (download-build rq))
   (GET "/manifest/:build" [build] (get-manifest build))
@@ -97,3 +104,8 @@
   (GET "/" [] (io/resource "public/index.html"))
   (route/resources "/")
   (route/not-found "404!"))
+
+(def handler
+  (-> app-routes
+      (rt/wrap-queue)
+      (wrap-session)))

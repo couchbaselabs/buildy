@@ -22,7 +22,7 @@ angular.module('myFilters', []).
         };
     });
 
-angular.module('buildboard', ['myFilters']).
+var bbmodule = angular.module('buildboard', ['myFilters']).
 config(['$routeProvider', '$locationProvider',
         function($routeProvider, $locationProvider) {
             $routeProvider.
@@ -35,26 +35,76 @@ config(['$routeProvider', '$locationProvider',
                 otherwise({redirectTo: '/builds/'});
         }]);
 
-function BuildCompareCtrl($scope, $http, $routeParams, $rootScope) {
+bbmodule.factory('buildyRT', function($http, $timeout) {
+    var recentMessages = [];
+
+    function poll() {
+        $http.get("/scrape-queue").success(function(resp) {
+            if(resp) {
+                recentMessages = recentMessages.concat(resp);
+                poll();
+            } else {
+                //should only get false/nil if we don't have a queue.
+                $http.get("/ensure-queue").success(function(resp) {
+                    poll();
+                });
+            }
+        }).error(function(err) {
+            $timeout(poll, 10000);
+        });
+    }
+
+    $http.get("/ensure-queue").success(function(resp) {
+        poll();
+    });
+
+    function bykind(kind) {
+        return _.filter(recentMessages, function(m) { return m && m.kind === kind; });
+    }
+
+    function clear() {
+        recentMessages = [];
+    }
+
+    function all() {
+        return recentMessages;
+    }
+
+    return {
+        all: all,
+        bykind: bykind,
+        clear: clear
+    };
+});
+
+function GitStatusCtrl($scope, buildyRT) {
+    $scope.rt = buildyRT;
+    buildyRT.clear();
+}
+
+function BuildCompareCtrl($scope, $http, $routeParams, $rootScope, buildyRT) {
     $rootScope.title = "Build " + $routeParams.builda + " vs. " + $routeParams.buildb;
     $scope.builda = $routeParams.builda;
     $scope.buildb = $routeParams.buildb;
     var comparisonreq = $http.get('/comparison-info/' + $routeParams.builda + '/' +
                                   $routeParams.buildb);
-    $scope.comparisons = comparisonreq.then(function(resp) {
-        if(resp.data.length === 0) {
-            return {empty: true};
+    $scope.diff = comparisonreq.then(function(resp) {
+        buildyRT.clear();
+        var diff = resp.data;
+        if(diff.compared.length === 0) {
+            diff.empty = true;
         }
-        return resp.data;
+        return diff;
     }, function (error) {
         $scope.error = error;
     });
 }
 
-function BuildDetailCtrl($scope, $http, $routeParams, $rootScope) {
+function BuildDetailCtrl($scope, $http, $routeParams, $rootScope, buildyRT) {
     $rootScope.title = "Build " + $routeParams.build;
     var buildinforeq = $http.get('/manifest-info/' + $routeParams.build);
     $scope.buildinfo = buildinforeq.then(function(resp) {
+        buildyRT.clear();
         return resp.data;
     }, function(error) {
         $scope.error = error;

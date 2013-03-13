@@ -8,6 +8,8 @@
             [me.raynes.conch :refer [programs]]
             [clojure.data.xml :as dxml]
             [clojure.java.io :as io]
+            [clojure.set :as cset]
+            [buildy.realtime :as rt]
             [clj-http.client :as http]))
 
 (defonce git-dir (atom (str (System/getenv "HOME") "/buildy-git-cache")))
@@ -68,8 +70,9 @@
     (if (.exists project-dir-f)
       (g/with-repo project-dir
         (setup-remote repo remote project)
-        (info "Git remote update: "
-              (git (str "--git-dir=" @git-dir "/" project-name "/.git") "remote" "update")))
+        (rt/place-advisory {:kind "git" :message
+                            (str "Git remote update: "
+                                 (git (str "--git-dir=" @git-dir "/" project-name "/.git") "remote" "update"))}))
       ;else
       (do (g/git-clone remote-url project-dir)
           (g/with-repo project-dir (setup-remote repo remote project))))))
@@ -92,6 +95,7 @@
                    {:gravatar (gravhash (:emailAddress author-beaned))})})))
 
 (defn commits-for-project [project]
+  (rt/place-advisory {:kind "git" :message (str "Examining git commits for " (pr-str project))})
   (g/with-repo (str @git-dir "/" (:name project))
     (g/git-log repo (:revision project))))
 
@@ -105,16 +109,22 @@
 (defn compare-builds [manifest-a manifest-b]
   (clone-projects manifest-a)
   (clone-projects manifest-b)
-  (let [project-names (keys (:projects manifest-a))]
-    (keep identity
-          (for [projname project-names]
+  (let [projects-a (set (keys (:projects manifest-a)))
+        projects-b (set (keys (:projects manifest-b)))
+        projects-to-compare (cset/intersection projects-a projects-b)
+        projects-only-a (cset/difference projects-a projects-b)
+        projects-only-b (cset/difference projects-b projects-a)]
+    {:projectsonlya projects-only-a
+     :projectsonlyb projects-only-b
+     :compared (keep identity
+          (for [projname projects-to-compare]
             (let [project-a (get-in manifest-a [:projects projname])
                   project-b (get-in manifest-b [:projects projname])
                   [only-a only-b] (project-comparison project-a project-b)]
               (when (some (comp pos? count) [only-a only-b])
                 {:name projname
                  :onlya (map niceify-commit only-a)
-                 :onlyb (map niceify-commit only-b)}))))))
+                 :onlyb (map niceify-commit only-b)}))))}))
 
 (defn attach-logs [manifest]
   (clone-projects manifest)
