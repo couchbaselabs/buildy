@@ -11,6 +11,7 @@
             [cbdrawer.client :as cb]
             [cbdrawer.transcoders :refer [json-transcoder]]
             [cbdrawer.view :as cb-view]
+            [buildy.design-docs :as ddocs]
             [buildy.realtime :as rt]
             [buildy.manifest :as mf]))
 
@@ -21,6 +22,7 @@
     (let [cbfs-fact (cb/factory "cbfs" "" "http://mango:8091/")]
       (info "Initializing Application")
       (cb/set-transcoder! json-transcoder)
+      (ddocs/install-all cbfs-fact)
       {:cbfs-fact cbfs-fact
        :cbfs-bucket (cb/client cbfs-fact)
        :cbfs-capis (cb/capi-bases cbfs-fact)
