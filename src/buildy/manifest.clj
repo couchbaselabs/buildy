@@ -16,9 +16,6 @@
 
 (programs git)
 
-(defn only-tag [coll tag]
-  (filter #(= tag (:tag %)) coll))
-
 (defn- md5sum
   [^String s]
   (let [digest ^MessageDigest (MessageDigest/getInstance "MD5")]
@@ -29,23 +26,31 @@
   [^String email]
   (-> email .trim .toLowerCase md5sum))
 
+(defn tagged
+  "Return children with tag t."
+  [element t]
+  (some->> (:content element)
+           (filter (comp (partial = t)
+                         :tag))))
+
+(defn assoc-attr-map
+  "assoc element's attribute list into map with it's 'name' attribute as the key,
+   optionally prefilling with a default values map."
+  ([acc element] (assoc-attr-map {} acc element))
+  ([default acc element]
+   (let [attrs (:attrs element)
+         k (:name attrs)]
+     (assoc acc k (merge default attrs)))))
+
 (defn read-manifest
   "Parse manifest XML"
   [source]
   (let  [parsed (dxml/parse source)
-         remotes (only-tag (:content parsed) :remote)
-         projects (only-tag (:content parsed) :project)
-         defaults (-> (only-tag (:content parsed) :default)
-                      first :attrs)
-         ]
-    {:remotes (into {}
-                    (map (fn [x-remote]
-                           (let [{:as atts :keys [name]} (:attrs x-remote)]
-                             [name atts])) remotes))
-     :projects (into {}
-                     (map (fn [x-project]
-                            (let [{:as atts :keys [name]} (:attrs x-project)]
-                              [name (merge defaults atts)])) projects))
+         remotes (tagged parsed :remote)
+         projects (tagged parsed :project)
+         defaults (-> parsed (tagged :default) first :attrs)]
+    {:remotes (reduce assoc-attr-map {} remotes)
+     :projects (reduce (partial assoc-attr-map defaults) {} projects)
      :defaults defaults}))
 
 (defn setup-remote [repo remote project]
@@ -71,19 +76,20 @@
       (g/with-repo project-dir
         (setup-remote repo remote project)
         (rt/place-advisory {:kind "git" :message
-                            (str "Git remote update: "
+                            (str project-name " $ git remote update\n"
                                  (git (str "--git-dir=" @git-dir "/" project-name "/.git") "remote" "update"))}))
       ;else
       (do (g/git-clone remote-url project-dir)
           (g/with-repo project-dir (setup-remote repo remote project))))))
 
 (defn clone-projects
-  "Fetch projects in manifest and store in git cache"
+  "Fetch projects in manifest and store in git cache, in parallel,
+   blocking until all fetches are finished."
   [manifest]
-  (into {} (map (fn [[k project]]
-                  (let [remote ((:remotes manifest) (:remote project))]
-                    [k (future (clone-or-update project remote))]))
-                (:projects manifest))))
+  (doseq [fut (doall (for [project (-> manifest :projects vals)]
+                       (future (clone-or-update
+                                 project ((:remotes manifest) (:remote project))))))]
+    (deref fut)))
 
 (defn niceify-commit [commit]
   (let [beaned (bean commit)
@@ -128,10 +134,10 @@
 
 (defn attach-logs [manifest]
   (clone-projects manifest)
-  (update-in manifest [:projects]
-             (fn [projects]
-               (into {} (map (fn [[project-name project]]
-                               [project-name (assoc project :log
-                                                    (map niceify-commit
-                                                         (take 10 (commits-for-project project))))])
-                             projects)))))
+  (reduce (fn [manifest project]
+            (assoc-in manifest [:projects (:name project) :log]
+                      (->> project
+                           commits-for-project
+                           (take 10)
+                           (map niceify-commit))))
+          manifest (-> manifest :projects vals)))
