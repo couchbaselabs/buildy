@@ -5,18 +5,19 @@
   </div>
   <div ng-bind-html-unsafe="error.data"></div>
   <div ng-show="buildinfo.projects">
-  <h2>Projects in Build</h2>
-  <h3>10 most recent commits in each</h3>
-  <ul>
-    <li ng-repeat="(projectname, project) in buildinfo.projects">
-      {{projectname}} - commit {{project.revision}}
-      <ul>
-	<li ng-repeat="commit in project.log">
-	  <i>{{commit.commitTime * 1000 | calDate}}</i>
-	  <img class="gravatar" src="http://www.gravatar.com/avatar/{{commit.author.gravatar}}?s=16"><b>{{commit.author.name}}</b> &ndash; {{commit.shortMessage}}
-	</li>
-      </ul>
-    </li>
-  </ul>
-</div>
+    <h2>Projects in Build</h2>
+    <h3>10 most recent commits in each</h3>
+    <ul>
+      <li ng-repeat="(projectname, project) in buildinfo.projects">
+	{{projectname}} - commit {{project.revision}}
+	<ul>
+	  <li ng-repeat="commit in project.log">
+	    <i>{{commit.commitTime * 1000 | calDate}}</i>
+	    <img class="gravatar" src="http://www.gravatar.com/avatar/{{commit.author.gravatar}}?s=16"><b>{{commit.author.name}}</b> &ndash; {{commit.shortMessage}}
+	    <a class="additional" href="{{commit.gerriturl}}" ng-show="commit.gerriturl">gerrit</a>
+	  </li>
+	</ul>
+      </li>
+    </ul>
+  </div>
 </div>
