@@ -106,7 +106,8 @@
        (json-response
          (apply mf/compare-builds
                 (mapv (comp mf/read-manifest get-manifest) [build-a build-b]))))
-  (GET "/" [] (io/resource "public/index.html"))
+  (GET "/" [] {:body (slurp (io/resource "public/index.html"))
+               :headers {"content-type" "text/html"}})
   (route/resources "/")
   (route/not-found "404!"))
 
