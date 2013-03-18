@@ -23,22 +23,24 @@
       <li ng-repeat="comparison in diff.compared">
 	<h4>{{comparison.name}}</h4>
 	<div ng-show="comparison.onlya[0]">
-	  <p>Commits only in <strong>{{builda}}</strong>
+	  <p>Commits only in <strong class="bg-color-a">{{builda}}</strong>
 	    <ul>
 	      <li ng-repeat="commit in comparison.onlya">
 		<i>{{commit.commitTime * 1000 | calDate}}</i>
-		<img class="gravatar" src="http://www.gravatar.com/avatar/{{commit.author.gravatar}}?s=16"><b>{{commit.author.name}}</b> &ndash; {{commit.shortMessage}}
+		<img class="gravatar" src="http://www.gravatar.com/avatar/{{commit.author.gravatar}}?s=16"><b>{{commit.author.name}}</b> &ndash;
+		<span class="under-a">{{commit.shortMessage}}</span>
 		<a class="additional" href="{{commit.gerriturl}}" ng-show="commit.gerriturl">gerrit</a>
 	      </li>
 	    </ul>
 	  </p>
 	</div>
 	<div ng-show="comparison.onlyb[0]">
-	  <p>Commits only in <strong>{{buildb}}</strong>
+	  <p>Commits only in <strong class="bg-color-b">{{buildb}}</strong>
 	    <ul>
 	      <li ng-repeat="commit in comparison.onlyb">
 		<i>{{commit.commitTime * 1000 | calDate}}</i>
-		<img class="gravatar" src="http://www.gravatar.com/avatar/{{commit.author.gravatar}}?s=16"><b>{{commit.author.name}}</b> &ndash; {{commit.shortMessage}}
+		<img class="gravatar" src="http://www.gravatar.com/avatar/{{commit.author.gravatar}}?s=16"><b>{{commit.author.name}}</b> &ndash;
+		<span class="under-b">{{commit.shortMessage}}</span>
 		<a class="additional" href="{{commit.gerriturl}}" ng-show="commit.gerriturl">gerrit</a>
 	      </li>
 	    </ul>

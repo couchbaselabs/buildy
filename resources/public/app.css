@@ -30,4 +30,21 @@
     text-decoration: underline;
 }
 
+.bg-color-a {
+    color: #fff;
+    background: #f1a340;
+}
+
+.bg-color-b {
+    color: #fff;
+    background: #998ec3;
+}
+
+.under-a {
+    border-bottom: 2px solid #f1a340;
+}
+
+.under-b {
+    border-bottom: 2px solid #998ec3;
+}
 
