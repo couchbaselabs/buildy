@@ -28,6 +28,7 @@
 	      <li ng-repeat="commit in comparison.onlya">
 		<i>{{commit.commitTime * 1000 | calDate}}</i>
 		<img class="gravatar" src="http://www.gravatar.com/avatar/{{commit.author.gravatar}}?s=16"><b>{{commit.author.name}}</b> &ndash; {{commit.shortMessage}}
+		<a class="additional" href="{{commit.gerriturl}}" ng-show="commit.gerriturl">gerrit</a>
 	      </li>
 	    </ul>
 	  </p>
@@ -38,6 +39,7 @@
 	      <li ng-repeat="commit in comparison.onlyb">
 		<i>{{commit.commitTime * 1000 | calDate}}</i>
 		<img class="gravatar" src="http://www.gravatar.com/avatar/{{commit.author.gravatar}}?s=16"><b>{{commit.author.name}}</b> &ndash; {{commit.shortMessage}}
+		<a class="additional" href="{{commit.gerriturl}}" ng-show="commit.gerriturl">gerrit</a>
 	      </li>
 	    </ul>
 	  </p>

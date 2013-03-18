@@ -3,7 +3,9 @@
   :url "http://example.com/FIXME"
   :license {:name "WTFPL"
             :url "http://www.wtfpl.net/"}
-  :profiles {:dev {:plugins [[lein-ring "0.8.3"]]}}
+  :profiles {:dev {:plugins [[lein-ring "0.8.3"]]
+                   :dependencies [[ring-serve "0.1.1"]
+                                  [org.eclipse.jetty/jetty-server "7.6.1.v20120215"]]}}
   :ring {:handler buildy.app/handler
          :init buildy.app/on-startup
          :destroy buildy.app/on-teardown}

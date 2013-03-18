@@ -102,11 +102,18 @@
                                    project ((:remotes manifest) (:remote project)))))))]
     (deref fut)))
 
+(defn footer-map [commit]
+  (into {} (for [fl (.getFooterLines commit)]
+             [(.getKey fl) (.getValue fl)])))
+
 (defn niceify-commit [commit]
   (let [beaned (bean commit)
         author (:authorIdent beaned)
-        author-beaned (bean author)]
+        author-beaned (bean author)
+        footkvs (footer-map commit)]
     (merge (select-keys beaned [:shortMessage :commitTime :name])
+           (if-let [gerrit-url (get footkvs "Reviewed-on")]
+             {:gerriturl gerrit-url})
            {:author
             (merge (select-keys author-beaned [:emailAddress :name])
                    {:gravatar (gravhash (:emailAddress author-beaned))})})))

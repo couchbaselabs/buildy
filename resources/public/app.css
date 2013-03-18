@@ -24,3 +24,10 @@
     margin-left: .5em;
 }
 
+.additional {
+    margin-left: 10px;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+
