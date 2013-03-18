@@ -65,6 +65,16 @@
                               (str"+refs/heads/*:refs/remotes/" remote-name "/*"))
                   (.save config))))))
 
+(defn repo-has-commit? [repo commit]
+  (try (-> repo (g/git-log commit) first)
+    (catch Exception e false)))
+
+(defn project-up-to-date? [project]
+  (let [repo-dir (str @git-dir "/" (:name project))]
+    (and (.exists (io/file repo-dir))
+         (g/with-repo repo-dir
+           (repo-has-commit? repo (:revision project))))))
+
 (defn clone-or-update
   [project remote]
   (let [project-name (:name project)
@@ -87,8 +97,9 @@
    blocking until all fetches are finished."
   [manifest]
   (doseq [fut (doall (for [project (-> manifest :projects vals)]
-                       (future (clone-or-update
-                                 project ((:remotes manifest) (:remote project))))))]
+                       (future (when-not (project-up-to-date? project)
+                                 (clone-or-update
+                                   project ((:remotes manifest) (:remote project)))))))]
     (deref fut)))
 
 (defn niceify-commit [commit]
