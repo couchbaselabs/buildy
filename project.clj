@@ -3,20 +3,21 @@
   :url "http://example.com/FIXME"
   :license {:name "WTFPL"
             :url "http://www.wtfpl.net/"}
-  :profiles {:dev {:plugins [[lein-ring "0.8.3"]]
-                   :dependencies [[ring-serve "0.1.1"]
-                                  [org.eclipse.jetty/jetty-server "7.6.1.v20120215"]]}}
-  :ring {:handler buildy.app/handler
-         :init buildy.app/on-startup
-         :destroy buildy.app/on-teardown}
+  :repositories {"sonatype-oss-public"
+                 "https://oss.sonatype.org/content/groups/public/"}
+  :main buildy.app
   :dependencies [[org.clojure/clojure "1.5.0"]
                  [org.clojure/data.xml "0.0.7"] ; XML
                  [cheshire "5.0.2"] ; JSON
-                 [compojure "1.1.5"] ; Routing
-                 [hiccup "1.0.2"] ; HTML
-                 [clj-http "0.6.4"] ; HTTP
-                 [clj-jgit "0.2.1"] ; Git
-                 [apage43/cbdrawer "0.1.0"] ; Couchbase
-                 [com.taoensso/timbre "1.5.2"] ; Logging
+                 [compojure "1.1.5"] ; Routin'
+                 [hiccup "1.0.2"] ; HTMLn'
+                 [clj-http "0.6.4"] ; HTTP'in
+                 [clj-jgit "0.2.1"] ; Gittin'
+                 [apage43/cbdrawer "0.1.0"] ; Couchbasin'
+                 [com.taoensso/timbre "1.5.2"] ; Loggin'
                  [me.raynes/conch "0.5.0"] ; Shellin'
+                 [aleph "0.3.0-beta15" :exclusions ; Networkin'
+                  [com.yammer.metrics/metrics-core]]
+                 ; The snapshot in lamina's deps disappeared.
+                 [com.yammer.metrics/metrics-core "3.0.0-SNAPSHOT"]
                  ])

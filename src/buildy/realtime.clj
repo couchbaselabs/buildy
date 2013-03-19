@@ -1,5 +1,5 @@
 (ns buildy.realtime
-  (:import [java.util.concurrent ArrayBlockingQueue])
+  (:import [java.util.concurrent ArrayBlockingQueue TimeUnit])
   (:require [taoensso.timbre :as timbre
              :refer [spy trace debug info warn error]]))
 
@@ -18,13 +18,14 @@
     (.offer q msg)))
 
 (defn collect-messages
-  "Scrape all the messages out of the session's queue."
+  "Scrape all the messages out of the session's queue, or time out after 10 seconds."
   []
   (if-let [q *outgoing*]
     (let [al (java.util.ArrayList.)]
       (.drainTo q al)
       (or (seq (into [] al))
-          [(.take q)]))
+          (when-let [got (.poll q 10 TimeUnit/SECONDS)]
+            [got])))
     (warn "Attempt to collect messages without queue")))
 
 (defn new-queue

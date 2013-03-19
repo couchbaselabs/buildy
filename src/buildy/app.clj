@@ -1,4 +1,5 @@
 (ns buildy.app
+  (:gen-class)
   (:use compojure.core
         ring.middleware.session)
   (:require [compojure.route :as route]
@@ -13,7 +14,9 @@
             [cbdrawer.view :as cb-view]
             [buildy.design-docs :as ddocs]
             [buildy.realtime :as rt]
-            [buildy.manifest :as mf]))
+            [buildy.manifest :as mf]
+            [aleph.http :refer [start-http-server wrap-ring-handler]]
+            [lamina.core :as lam]))
 
 (defonce ^:private appcfg* (atom nil))
 
@@ -78,10 +81,7 @@
         build (get-in rq [:params :build])]
     (proxy-to (str cbfs-base "builds/" build) rq)))
 
-(defn on-startup []
-  (appcfg)) ; load up couchbase client and stuff)
-
-(defn on-teardown []
+(defn teardown []
   (cb/shutdown (:cbfs-bucket (appcfg)))
   (reset! appcfg* nil))
 
@@ -115,3 +115,7 @@
   (-> app-routes
       (rt/wrap-queue)
       (wrap-session)))
+
+(defn -main [& args]
+  (appcfg)
+  (start-http-server (wrap-ring-handler handler) {:port 3000}))
