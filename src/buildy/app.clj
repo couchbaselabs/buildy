@@ -15,7 +15,8 @@
             [buildy.design-docs :as ddocs]
             [buildy.realtime :as rt]
             [buildy.manifest :as mf]
-            [aleph.http :refer [start-http-server wrap-ring-handler]]
+            [aleph.http :refer [start-http-server wrap-ring-handler
+                                wrap-aleph-handler]]
             [lamina.core :as lam]))
 
 (defonce ^:private appcfg* (atom nil))
@@ -85,6 +86,11 @@
   (cb/shutdown (:cbfs-bucket (appcfg)))
   (reset! appcfg* nil))
 
+(defmacro asyncly [& body]
+  `(wrap-aleph-handler (fn [ch# rq#]
+                         (future
+                           (lam/enqueue ch# (do ~@body))))))
+
 (defroutes app-routes
   (GET "/ensure-queue" {:keys [session]}
        (assoc (json-response "OK") :session
@@ -93,19 +99,19 @@
                          "expires" 0}
                :queue (or (:queue session)
                           (rt/new-queue))}))
-  (GET "/scrape-queue" [] (json-response (rt/collect-messages)))
+  (GET "/scrape-queue" [] (asyncly (json-response (rt/collect-messages))))
   (GET "/allbuilds" [] (cbfs-builds-list))
   (GET "/get/:build" rq (download-build rq))
   (GET "/manifest/:build" [build] (get-manifest build))
-  (GET "/manifest-info/:build" [build]  (json-response
-                                          (-> build
-                                              get-manifest
-                                              mf/read-manifest
-                                              mf/attach-logs)))
+  (GET "/manifest-info/:build" [build]  (asyncly (json-response
+                                                   (-> build
+                                                       get-manifest
+                                                       mf/read-manifest
+                                                       mf/attach-logs))))
   (GET "/comparison-info/:build-a/:build-b" [build-a build-b]
-       (json-response
-         (apply mf/compare-builds
-                (mapv (comp mf/read-manifest get-manifest) [build-a build-b]))))
+       (asyncly (json-response
+                  (apply mf/compare-builds
+                         (mapv (comp mf/read-manifest get-manifest) [build-a build-b])))))
   (GET "/" [] {:body (slurp (io/resource "public/index.html"))
                :headers {"content-type" "text/html"}})
   (route/resources "/")
