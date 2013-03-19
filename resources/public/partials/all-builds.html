@@ -24,6 +24,16 @@
 	  ng-class="{pressed: included('ext', ext)}">{{ext}}</a>
       </li>
     </ul>
+    <ul class="button-group round" ng-class="{filtering: included('toy') || included('_toy')}">
+      <li>
+	<a class="small button" ng-click="toggleFlag('_toy')"
+	  ng-class="{pressed: included('_toy')}">toybuilds</a>
+      </li>
+      <li ng-repeat="toy in unless(included('_toy'), toys)">
+	<a class="small button" ng-click="toggleFilter('toy', toy)"
+	  ng-class="{pressed: included('toy', toy)}">{{toy}}</a>
+      </li>
+    </ul>
   </div>
 </div>
 <div class="row" ng-show="comparisonA">

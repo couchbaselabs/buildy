@@ -27,7 +27,8 @@ config(['$routeProvider', '$locationProvider',
         function($routeProvider, $locationProvider) {
             $routeProvider.
                 when('/builds/', { templateUrl: '/partials/all-builds.html',
-                                   controller: 'BuildListCtrl'}).
+                                   controller: 'BuildListCtrl',
+                                   reloadOnSearch: false}).
                 when('/buildinfo/:build', { templateUrl: '/partials/build-detail.html',
                                             controller: 'BuildDetailCtrl'}).
                 when('/compare/:builda/:buildb', { templateUrl: '/partials/build-compare.html',
@@ -134,10 +135,10 @@ function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, build
 
     function setupFilter(field) {
         $scope[field + 's'] = $scope.builds.then(function(builds) {
-            return _(builds).pluck(field).uniq().value();
+            return _(builds).pluck(field).uniq().filter().value();
         });
     }
-    _.each(["arch", "version", "license", "ext"], setupFilter);
+    _.each(["arch", "version", "license", "ext", "toy"], setupFilter);
 
     $scope.filtering = {};
     if($routeParams.filter) {
@@ -159,6 +160,17 @@ function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, build
         $location.search({filter: JSON.stringify($scope.filtering)});
     };
 
+    $scope.toggleFlag = function(field) {
+        if($scope.filtering[field]) {
+            delete $scope.filtering[field];
+        } else {
+            $scope.filtering[field] = true;
+        }
+        $location.search({filter: JSON.stringify($scope.filtering)});
+    };
+
+    $scope.unless = function(cond, v) { if(cond) { return v; } else { return false; } };
+
     $scope.included = function(field, value) {
         if(!value) { return $scope.filtering[field] !== undefined; }
         return _.contains($scope.filtering[field], value);
@@ -166,8 +178,10 @@ function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, build
 
     $scope.filtered = function(builds) {
         return _.filter(builds, function(build) {
-            //if(_.isEmpty($scope.filtering)) { return true; }
-            return _.every($scope.filtering, function(values, field) {
+            if($scope.filtering._toy && !build.toy) {
+                return false;
+            }
+            return _.every(_.omit($scope.filtering, '_toy'), function(values, field) {
                 return _.contains(values,build[field]);
             });
         });
@@ -181,6 +195,7 @@ function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, build
         delete $scope.comparisonA;
     };
     $scope.compareB = function(build) {
+        $location.search('');
         $location.path('/compare/' + $scope.comparisonA.filename + '/' + build.filename);
     };
 
