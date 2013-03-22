@@ -115,6 +115,10 @@ function BuildDetailCtrl($scope, $http, $routeParams, $rootScope, buildyRT) {
 function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, buildyRT) {
     $rootScope.title = "All Builds";
     var viewresults = $http.get('/allbuilds');
+    var extremap = {
+        exe: 'win',
+        zip: 'mac'
+    };
     $scope.builds = viewresults.then(function(resp) {
         return _(resp.data).map(function(row) {
             var build = row.doc.json.userdata;
@@ -123,6 +127,8 @@ function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, build
             build.date = row.doc.json.modified;
             build.size = row.doc.json.length;
             build.ext = build.filename.match(/\.([^\.]+)$/)[1];
+            build.os = extremap[build.ext];
+            if(!build.os) { build.os = build.ext; }
             var toy = build.filename.match(/_toy-([^\-]+)-/);
             if(toy) { build.toy = toy[1]; }
             if(!build.version) {
@@ -138,7 +144,7 @@ function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, build
             return _(builds).pluck(field).uniq().filter().value();
         });
     }
-    _.each(["arch", "version", "license", "ext", "toy"], setupFilter);
+    _.each(["arch", "version", "license", "os", "toy"], setupFilter);
 
     $scope.filtering = {};
     if($routeParams.filter) {

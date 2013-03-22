@@ -18,10 +18,10 @@
 	  ng-class="{pressed: included('version', version)}">{{version}}</a>
       </li>
     </ul>
-    <ul class="button-group round" ng-class="{filtering: included('ext')}">
-      <li ng-repeat="ext in exts">
-	<a class="small button" ng-click="toggleFilter('ext', ext)"
-	  ng-class="{pressed: included('ext', ext)}">{{ext}}</a>
+    <ul class="button-group round" ng-class="{filtering: included('os')}">
+      <li ng-repeat="os in oss">
+	<a class="small button" ng-click="toggleFilter('os', os)"
+	  ng-class="{pressed: included('os', os)}">{{os}}</a>
       </li>
     </ul>
     <ul class="button-group round" ng-class="{filtering: included('toy') || included('_toy')}">
@@ -48,7 +48,7 @@
       ng-show="comparisonA && comparisonA != build"><i class="icon-arrow-right"></i></a>
     <span ng-show="comparisonA == build">Compare </span>
     <a href="#/buildinfo/{{build.filename}}" class="buildlink">
-      <strong>{{build.fullversion}} {{build.license}} ({{build.ext}} {{build.arch}}),
+      <strong>{{build.fullversion}} {{build.license}} ({{build.os}} {{build.arch}}),
 	<em ng-show="build.toy">{{build.toy}}'s toy build</em></strong></a>
     uploaded {{build.date | relDate}}
   </div>
