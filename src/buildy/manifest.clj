@@ -75,6 +75,10 @@
          (g/with-repo repo-dir
            (repo-has-commit? repo (:revision project))))))
 
+(defn git-describe
+  [project committish]
+  (git (str "--git-dir=" @git-dir "/" project "/.git") "describe" committish))
+
 (defn clone-or-update
   [project remote]
   (let [project-name (:name project)
@@ -149,6 +153,13 @@
                 {:name projname
                  :onlya (map niceify-commit only-a)
                  :onlyb (map niceify-commit only-b)}))))}))
+
+(defn describe-projects [manifest]
+  (rt/place-advisory {:kind "git" :message "describin'"})
+  (reduce (fn [manifest project]
+            (assoc-in manifest [:projects (:name project) :describe]
+                      (git-describe (:name project) (:revision project))))
+          manifest (-> manifest :projects vals)))
 
 (defn attach-logs [manifest]
   (clone-projects manifest)

@@ -107,7 +107,9 @@
                                                    (-> build
                                                        get-manifest
                                                        mf/read-manifest
-                                                       mf/attach-logs))))
+                                                       mf/attach-logs
+                                                       mf/describe-projects
+                                                       ))))
   (GET "/comparison-info/:build-a/:build-b" [build-a build-b]
        (asyncly (json-response
                   (apply mf/compare-builds

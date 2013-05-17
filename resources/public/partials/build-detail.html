@@ -9,7 +9,7 @@
     <h3>10 most recent commits in each</h3>
     <ul>
       <li ng-repeat="(projectname, project) in buildinfo.projects">
-	{{projectname}} - commit {{project.revision}}
+	{{projectname}} - {{project.describe || project.revision}}
 	<ul>
 	  <li ng-repeat="commit in project.log">
 	    <i>{{commit.commitTime * 1000 | calDate}}</i>

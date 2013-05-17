@@ -16,8 +16,5 @@
                  [apage43/cbdrawer "0.1.0"] ; Couchbasin'
                  [com.taoensso/timbre "1.5.2"] ; Loggin'
                  [me.raynes/conch "0.5.0"] ; Shellin'
-                 [aleph "0.3.0-beta15" :exclusions ; Networkin'
-                  [com.yammer.metrics/metrics-core]]
-                 ; The snapshot in lamina's deps disappeared.
-                 [com.yammer.metrics/metrics-core "3.0.0-SNAPSHOT"]
+                 [aleph "0.3.0-rc1"] ; Networkin'
                  ])
