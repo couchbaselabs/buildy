@@ -1,7 +1,8 @@
 (ns buildy.app
   (:gen-class)
   (:use compojure.core
-        ring.middleware.session)
+        ring.middleware.session
+        ring.middleware.stacktrace)
   (:require [compojure.route :as route]
             [taoensso.timbre :as timbre
              :refer [spy trace debug info warn error]]
@@ -71,11 +72,12 @@
         boturl (str builds-bot build ".manifest.xml")
         meta-resp (http/get cbfsurl {:throw-exceptions false})]
     (if (= 200 (:status meta-resp))
-      (io/input-stream (str cbfsurl))
+      (io/input-stream cbfsurl)
       ;otherwise
-      (do (info "Manifest not in CBFS, copying to CBFS, and proxying to buildbot:" build)
-          (future (http/put cbfsurl {:body (io/input-stream boturl)}))
-          (io/input-stream boturl)))))
+      (do (info "Manifest not in CBFS, copying to CBFS, and proxying to buildbot:" build boturl)
+          (let [bot-resp (http/get boturl)]
+            (http/put cbfsurl {:body (:body bot-resp)}))
+          (io/input-stream cbfsurl)))))
 
 (defn download-build [rq]
   (let [{:keys [cbfs-base]} (appcfg)
@@ -103,17 +105,16 @@
   (GET "/allbuilds" [] (cbfs-builds-list))
   (GET "/get/:build" rq (download-build rq))
   (GET "/manifest/:build" [build] (get-manifest build))
-  (GET "/manifest-info/:build" [build]  (asyncly (json-response
-                                                   (-> build
-                                                       get-manifest
-                                                       mf/read-manifest
-                                                       mf/attach-logs
-                                                       mf/describe-projects
-                                                       ))))
+  (GET "/manifest-info/:build" [build]  (json-response
+                                            (-> build
+                                                get-manifest
+                                                mf/read-manifest
+                                                mf/attach-logs
+                                                mf/describe-projects)))
   (GET "/comparison-info/:build-a/:build-b" [build-a build-b]
-       (asyncly (json-response
-                  (apply mf/compare-builds
-                         (mapv (comp mf/read-manifest get-manifest) [build-a build-b])))))
+       (json-response
+         (apply mf/compare-builds
+                (mapv (comp mf/read-manifest get-manifest) [build-a build-b]))))
   (GET "/" [] {:body (slurp (io/resource "public/index.html"))
                :headers {"content-type" "text/html"}})
   (route/resources "/")
@@ -121,6 +122,7 @@
 
 (def handler
   (-> app-routes
+      (wrap-stacktrace)
       (rt/wrap-queue)
       (wrap-session)))
 

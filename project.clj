@@ -10,6 +10,7 @@
                  [org.clojure/data.xml "0.0.7"] ; XML
                  [cheshire "5.0.2"] ; JSON
                  [compojure "1.1.5"] ; Routin'
+                 [ring/ring-devel "1.1.8"] ; Stacktraces
                  [hiccup "1.0.2"] ; HTMLn'
                  [clj-http "0.6.4"] ; HTTP'in
                  [clj-jgit "0.2.1"] ; Gittin'
