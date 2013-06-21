@@ -72,12 +72,12 @@
         boturl (str builds-bot build ".manifest.xml")
         meta-resp (http/get cbfsurl {:throw-exceptions false})]
     (if (= 200 (:status meta-resp))
-      (io/input-stream cbfsurl)
+      (:body (http/get cbfsurl {:as :stream}))
       ;otherwise
       (do (info "Manifest not in CBFS, copying to CBFS, and proxying to buildbot:" build boturl)
           (let [bot-resp (http/get boturl)]
             (http/put cbfsurl {:body (:body bot-resp)}))
-          (io/input-stream cbfsurl)))))
+          (:body (http/get cbfsurl {:as :stream}))))))
 
 (defn download-build [rq]
   (let [{:keys [cbfs-base]} (appcfg)
@@ -92,6 +92,12 @@
   `(wrap-aleph-handler (fn [ch# rq#]
                          (future
                            (lam/enqueue ch# (do ~@body))))))
+
+(defn remove-projects [manifest & to-remove]
+  (update-in manifest [:projects] 
+             (fn [projects]
+               (let [all-ps (keys projects)]
+                 (select-keys projects (remove (set to-remove) all-ps))))))
 
 (defroutes app-routes
   (GET "/ensure-queue" {:keys [session]}
@@ -109,12 +115,17 @@
                                             (-> build
                                                 get-manifest
                                                 mf/read-manifest
+                                                (remove-projects "testrunner")
                                                 mf/attach-logs
                                                 mf/describe-projects)))
   (GET "/comparison-info/:build-a/:build-b" [build-a build-b]
        (json-response
          (apply mf/compare-builds
-                (mapv (comp mf/read-manifest get-manifest) [build-a build-b]))))
+                (mapv #(-> %
+                           get-manifest
+                           mf/read-manifest
+                           (remove-projects "testrunner"))
+                      [build-a build-b]))))
   (GET "/" [] {:body (slurp (io/resource "public/index.html"))
                :headers {"content-type" "text/html"}})
   (route/resources "/")
