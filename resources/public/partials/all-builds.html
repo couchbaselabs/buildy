@@ -41,7 +41,7 @@
     <i class="icon-exchange"></i> Cancel Compare</a>
 </div>
 <div class="row builditem" ng-repeat="build in filtered(builds)">
-  <div class="small-10 columns">
+  <div class="small-8 columns">
     <a class="button tiny round secondary" ng-click="compareA(build)"
       ng-hide="comparisonA"><i class="icon-exchange"></i></a>
     <a class="button tiny round alert" ng-click="compareB(build)"
@@ -52,8 +52,16 @@
 	<em ng-show="build.toy">{{build.toy}}'s toy build</em></strong></a>
     uploaded {{build.date | relDate}}
   </div>
-  <div class="small-2 columns">
-    <a class="button small radius success"
-      href="/get/{{build.filename}}">Download {{build.ext}} ({{build.size | bytes}})</a>
+  <div class="small-4 columns">
+    <ul class="button-group radius">
+      <li>
+	<a class="button small success dlbtn"
+	  href="/get/{{build.filename}}">Download {{build.ext}} ({{build.size | bytes}})</a>
+      </li>
+      <li>
+	<a class="button small"
+	  href="/manifest/{{build.filename}}"><i class="icon-book"></i></a>
+      </li>
+    </ul>
   </div>
 </div>
