@@ -56,7 +56,6 @@
 
 (defn proxy-to [url & [rq]]
   (let [resp (http/get url {:as :stream
-                            :headers (:headers rq)
                             :throw-exceptions false})
         headers (select-keys (:headers resp)
                              ["content-type"
@@ -110,14 +109,15 @@
   (GET "/scrape-queue" [] (asyncly (json-response (rt/collect-messages))))
   (GET "/allbuilds" [] (cbfs-builds-list))
   (GET "/get/:build" rq (download-build rq))
-  (GET "/manifest/:build" [build] (get-manifest build))
+  (GET "/manifest/:build" [build] {:headers {"content-type" "text/xml"} 
+                                   :body (get-manifest build)})
   (GET "/manifest-info/:build" [build]  (json-response
-                                            (-> build
-                                                get-manifest
-                                                mf/read-manifest
-                                                (remove-projects "testrunner")
-                                                mf/attach-logs
-                                                mf/describe-projects)))
+                                          (-> build
+                                              get-manifest
+                                              mf/read-manifest
+                                              (remove-projects "testrunner")
+                                              mf/attach-logs
+                                              mf/describe-projects)))
   (GET "/comparison-info/:build-a/:build-b" [build-a build-b]
        (json-response
          (apply mf/compare-builds
