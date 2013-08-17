@@ -7,7 +7,8 @@
 (def ^:ensure-installed
   buildboard
   (json/generate-string
-    {:views {:builds {:map (slurp (io/resource "views/builds-map.js"))}}}))
+    {:views {:builds {:map (slurp (io/resource "views/builds-map.js"))
+                      :reduce (slurp (io/resource "views/builds-reduce.js"))}}}))
 
 ; Find all vars in this ns marked :ensure-installed
 (def ^:private to-install
@@ -16,7 +17,7 @@
        (map second)
        (map (juxt (comp name :name meta) deref))))
 
-(defn install-all [factory]
+(defn install-all [factory & [pfx]]
   (let [capis (cb/capi-bases factory)]
     (doseq [[id source] to-install]
-      (cb-view/install-ddoc capis id source))))
+      (cb-view/install-ddoc capis (str pfx id) source))))

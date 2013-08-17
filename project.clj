@@ -8,6 +8,7 @@
   :main buildy.app
   :dependencies [[org.clojure/clojure "1.5.0"]
                  [org.clojure/data.xml "0.0.7"] ; XML
+                 [org.clojure/core.memoize "0.5.6"] ; Cachin'
                  [cheshire "5.0.2"] ; JSON
                  [compojure "1.1.5"] ; Routin'
                  [ring/ring-devel "1.1.8"] ; Stacktraces

@@ -114,39 +114,56 @@ function BuildDetailCtrl($scope, $http, $routeParams, $rootScope, buildyRT) {
 
 function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, buildyRT) {
     $rootScope.title = "All Builds";
-    var viewresults = $http.get('/allbuilds');
     var extremap = {
         exe: 'win',
         zip: 'mac'
     };
-    $scope.builds = viewresults.then(function(resp) {
-        return _(resp.data).map(function(row) {
-            var build = row.doc.json.userdata;
-            if(!build.fullversion) { return false; }
-            build.filename = row.id.match(/\/([^\/]+)$/)[1];
-            build.date = row.doc.json.modified;
-            build.size = row.doc.json.length;
-            build.ext = build.filename.match(/\.([^\.]+)$/)[1];
-            build.os = extremap[build.ext];
-            if(!build.os) { build.os = build.ext; }
-            var toy = build.filename.match(/_toy-([^\-]+)-/);
-            if(toy) { build.toy = toy[1]; }
-            if(!build.version) {
-                build.version = build.fullversion.match(/^([^\-]+)-/)[1];
-            }
-            return build;
-        }).filter().value();
-    });
 
-
-    function setupFilter(field) {
-        $scope[field + 's'] = $scope.builds.then(function(builds) {
-            return _(builds).pluck(field).uniq().filter().value();
+    var pagesize = 20;
+    $scope.pagesize = pagesize;
+    $scope.pos = 0;
+    $scope.prev = function() {
+        if($scope.pos == 0) return;
+        $scope.pos -= pagesize;
+        refresh();
+    }
+    $scope.next = function() {
+        $scope.builds.then(function(builds) {
+            if(builds.length == 0) return;
+            if(builds.length < pagesize) return;
+            $scope.pos += pagesize;
+            refresh();
         });
     }
-    _.each(["arch", "version", "license", "os", "toy"], setupFilter);
+
+    function refresh() {
+        console.log('REFRESH');
+        var viewresults = $http.get('/allbuilds', {
+            params: {
+                skip: $scope.pos,
+                limit: $scope.pagesize,
+                buildfilter: $scope.filtering
+            }
+        });
+        $scope.builds = viewresults.then(function(resp) {
+            return _(resp.data).map(function(row) {
+                return row.value;
+            }).filter().value();
+        });
+    }
+    refresh();
+
+    $http.get('/filtercats').then(function(resp) {
+        for(cat in resp.data) {
+            $scope[cat + 's'] = resp.data[cat];
+        }
+    });
 
     $scope.filtering = {};
+    function filterUp() {
+        $scope.pos = 0;
+        refresh();
+    }
     if($routeParams.filter) {
         $scope.filtering = JSON.parse($routeParams.filter);
     }
@@ -163,6 +180,7 @@ function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, build
         } else {
             $scope.filtering[field] = [value];
         }
+        filterUp();
         $location.search({filter: JSON.stringify($scope.filtering)});
     };
 
@@ -172,6 +190,7 @@ function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, build
         } else {
             $scope.filtering[field] = true;
         }
+        filterUp();
         $location.search({filter: JSON.stringify($scope.filtering)});
     };
 
@@ -181,18 +200,6 @@ function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, build
         if(!value) { return $scope.filtering[field] !== undefined; }
         return _.contains($scope.filtering[field], value);
     };
-
-    $scope.filtered = function(builds) {
-        return _.filter(builds, function(build) {
-            if($scope.filtering._toy && !build.toy) {
-                return false;
-            }
-            return _.every(_.omit($scope.filtering, '_toy'), function(values, field) {
-                return _.contains(values,build[field]);
-            });
-        });
-    };
-
 
     $scope.compareA = function(build) {
         $scope.comparisonA = build;
@@ -205,4 +212,5 @@ function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, build
         $location.path('/compare/' + $scope.comparisonA.filename + '/' + build.filename);
     };
 
+    refresh();
 }

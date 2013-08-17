@@ -36,11 +36,32 @@
     </ul>
   </div>
 </div>
+
+<div class="row">
+  <ul class="button-group round">
+    <li>
+    <a class="small button" ng-disabled="pos == 0" ng-click="prev()">
+      <i class="icon-chevron-left"></i>
+    </a>
+    </li>
+    <li>
+    <a class="small button" disabled>
+      Page {{pos / pagesize + 1}}
+    </a>
+    </li>
+    <li>
+    <a class="small button" ng-disabled="builds.length == 0" ng-click="next()">
+      <i class="icon-chevron-right"></i>
+    </a>
+    </li>
+  </ul>
+</div>
+
 <div class="row" ng-show="comparisonA">
   <a class="button tiny round alert" ng-click="cancelCompare()">
     <i class="icon-exchange"></i> Cancel Compare</a>
 </div>
-<div class="row builditem" ng-repeat="build in filtered(builds)">
+<div class="row builditem" ng-repeat="build in builds">
   <div class="small-8 columns">
     <a class="button tiny round secondary" ng-click="compareA(build)"
       ng-hide="comparisonA"><i class="icon-exchange"></i></a>
@@ -48,7 +69,7 @@
       ng-show="comparisonA && comparisonA != build"><i class="icon-arrow-right"></i></a>
     <span ng-show="comparisonA == build">Compare </span>
     <a href="#/buildinfo/{{build.filename}}" class="buildlink">
-      <strong>{{build.fullversion}} {{build.license}} ({{build.os}} {{build.arch}}),
+      <strong>{{build.fullversion}} {{build.license}} ({{build.os}}, {{build.arch}}),
 	<em ng-show="build.toy">{{build.toy}}'s toy build</em></strong></a>
     uploaded {{build.date | relDate}}
   </div>

@@ -4,6 +4,7 @@
         ring.middleware.session
         ring.middleware.stacktrace)
   (:require [compojure.route :as route]
+            [compojure.handler :as ch]
             [taoensso.timbre :as timbre
              :refer [spy trace debug info warn error]]
             [ring.util.response :as response]
@@ -11,6 +12,7 @@
             [cheshire.core :as json]
             [clojure.java.io :as io]
             [cbdrawer.client :as cb]
+            [clojure.core.memoize :as memo]
             [cbdrawer.transcoders :refer [json-transcoder]]
             [cbdrawer.view :as cb-view]
             [buildy.design-docs :as ddocs]
@@ -22,37 +24,48 @@
 
 (defonce ^:private appcfg* (atom nil))
 
-(defn initial-cfg [init]
+(defn initial-cfg [init {:keys [dev] :or {dev false}}]
   (if-not init
     (let [cbfs-fact (cb/factory "cbfs" "" "http://mango:8091/")]
       (info "Initializing Application")
       (cb/set-transcoder! json-transcoder)
-      (ddocs/install-all cbfs-fact)
+      (ddocs/install-all cbfs-fact (if dev "dev_" ""))
       {:cbfs-fact cbfs-fact
+       :ddoc-prefix (if dev "dev_" "")
        :cbfs-bucket (cb/client cbfs-fact)
        :cbfs-capis (cb/capi-bases cbfs-fact)
        :cbfs-base "http://cbfs.hq.couchbase.com:8484/"
        :builds-bot "http://builds.hq.northscale.net/latestbuilds/"})
     init))
 
-(defn appcfg []
+(defn appcfg [& {:as kwargs}]
   (if-let [cfg @appcfg*]
     cfg
-    (swap! appcfg* initial-cfg)))
+    (swap! appcfg* initial-cfg kwargs)))
 
 (defn json-response [obj]
   (-> (response/response (json/generate-string obj))
       (response/content-type "application/json; charset=utf-8")))
 
-(defn cbfs-builds-list []
-  (let [{:keys [cbfs-capis]} (appcfg)
-        build-view (cb-view/view-url cbfs-capis "buildboard" "builds")]
-    (json-response
-      (cb-view/view-seq build-view
+(defn cbfs-builds-list* []
+  (let [{:keys [cbfs-capis ddoc-prefix]} (appcfg)
+        build-view (cb-view/view-url cbfs-capis (str ddoc-prefix "buildboard") "builds")]
+    (cb-view/view-seq build-view
                         {:endkey ["date"]
                          :startkey ["date" {}]
+                         :full_set true
                          :descending true
-                         :include_docs true}))))
+                         :include_docs true})))
+
+(def cbfs-builds-list (memo/ttl cbfs-builds-list* :ttl/threshold 60000))
+
+(defn cbfs-filtercats []
+  (let [{:keys [cbfs-capis ddoc-prefix]} (appcfg)
+        build-view (cb-view/view-url cbfs-capis (str ddoc-prefix "buildboard") "builds")]
+    (-> (cb-view/view-seq build-view
+                        {:reduce true
+                         :full_set true})
+        first :value)))
 
 (defn proxy-to [url & [rq]]
   (let [resp (http/get url {:as :stream
@@ -93,10 +106,26 @@
                            (lam/enqueue ch# (do ~@body))))))
 
 (defn remove-projects [manifest & to-remove]
-  (update-in manifest [:projects] 
+  (update-in manifest [:projects]
              (fn [projects]
                (let [all-ps (keys projects)]
                  (select-keys projects (remove (set to-remove) all-ps))))))
+
+(defn apply-filter [buildfilter buildlist]
+  (if buildfilter
+    (->> buildlist
+         (filter
+           (fn [row]
+             (every?
+               (fn [cat]
+                 (when-let [rowcat (-> row :value cat)]
+                   (some #(= rowcat %) (buildfilter cat))))
+               (filter
+                 (comp
+                   #(not (.startsWith % "_"))
+                   name)
+                 (keys buildfilter))))))
+    buildlist))
 
 (defroutes app-routes
   (GET "/ensure-queue" {:keys [session]}
@@ -107,8 +136,14 @@
                :queue (or (:queue session)
                           (rt/new-queue))}))
   (GET "/scrape-queue" [] (asyncly (json-response (rt/collect-messages))))
-  (GET "/allbuilds" [] (cbfs-builds-list))
+  (GET "/allbuilds" [skip limit buildfilter]
+       (->> (cbfs-builds-list)
+            (apply-filter (some-> buildfilter (json/parse-string true)))
+            (drop (or (some-> skip read-string) 0))
+            (take (or (some-> limit read-string) 20))
+            json-response))
   (GET "/get/:build" rq (download-build rq))
+  (GET "/filtercats" rq (json-response (cbfs-filtercats)))
   (GET "/manifest/:build" [build] {:headers {"content-type" "text/xml"} 
                                    :body (get-manifest build)})
   (GET "/manifest-info/:build" [build]  (json-response
@@ -132,11 +167,14 @@
   (route/not-found "404!"))
 
 (def handler
-  (-> app-routes
+  (-> #'app-routes
+      (ch/api)
       (wrap-stacktrace)
       (rt/wrap-queue)
       (wrap-session)))
 
 (defn -main [& args]
-  (appcfg)
-  (start-http-server (wrap-ring-handler handler) {:port 3000}))
+  (if (= ["dev"] args) 
+    (appcfg :dev true)
+    (appcfg))
+  (start-http-server (wrap-ring-handler #'handler) {:port 3000}))
