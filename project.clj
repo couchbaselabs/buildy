@@ -6,6 +6,7 @@
   :repositories {"sonatype-oss-public"
                  "https://oss.sonatype.org/content/groups/public/"}
   :main buildy.app
+  :profiles {:uberjar {:aot [buildy.app]}}
   :dependencies [[org.clojure/clojure "1.5.0"]
                  [org.clojure/data.xml "0.0.7"] ; XML
                  [org.clojure/core.memoize "0.5.6"] ; Cachin'
