@@ -18,7 +18,7 @@ function reduce(keys, vals, rereduce) {
   for(cat in out) {
     var els = [];
     for(el in out[cat]) {
-      els.push(out[cat][el]);
+      els.push(el);
     };
     out[cat] = els;
   }
