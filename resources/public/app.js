@@ -137,7 +137,6 @@ function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, build
     }
 
     function refresh() {
-        console.log('REFRESH');
         var viewresults = $http.get('/allbuilds', {
             params: {
                 skip: $scope.pos,
@@ -155,7 +154,7 @@ function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, build
 
     $http.get('/filtercats').then(function(resp) {
         for(cat in resp.data) {
-            $scope[cat + 's'] = resp.data[cat];
+            $scope[cat + 's'] = _.sortBy(resp.data[cat]);
         }
     });
 

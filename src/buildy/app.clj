@@ -18,6 +18,7 @@
             [buildy.design-docs :as ddocs]
             [buildy.realtime :as rt]
             [buildy.manifest :as mf]
+            [ring.util.response :refer [redirect]]
             [aleph.http :refer [start-http-server wrap-ring-handler
                                 wrap-aleph-handler]]
             [lamina.core :as lam]))
@@ -142,7 +143,7 @@
             (drop (or (some-> skip read-string) 0))
             (take (or (some-> limit read-string) 20))
             json-response))
-  (GET "/get/:build" rq (download-build rq))
+  (GET "/get/:build" [build] (redirect (str "http://cbfs-ext.hq.couchbase.com/builds/" build)))
   (GET "/filtercats" rq (json-response (cbfs-filtercats)))
   (GET "/manifest/:build" [build] {:headers {"content-type" "text/xml"} 
                                    :body (get-manifest build)})
