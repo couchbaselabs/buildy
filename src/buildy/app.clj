@@ -164,6 +164,12 @@
                       [build-a build-b]))))
   (GET "/" [] {:body (slurp (io/resource "public/index.html"))
                :headers {"content-type" "text/html"}})
+  (POST "/my-hooks/my-hooks/my-hooks"
+        {{:as params :keys [event]} :params}
+        (println "Got event from build stuff" event
+                 (pr-str params))
+        "OK I GOT YOUR HOOK THX")
+
   (route/resources "/")
   (route/not-found "404!"))
 
