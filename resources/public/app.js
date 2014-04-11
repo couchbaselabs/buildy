@@ -113,7 +113,7 @@ function BuildDetailCtrl($scope, $http, $routeParams, $rootScope, buildyRT) {
 }
 
 function BuildListCtrl($scope, $http, $routeParams, $location, $rootScope, buildyRT) {
-    $rootScope.title = "All Builds";
+    $rootScope.title = "Server Builds";
     var extremap = {
         exe: 'win',
         zip: 'mac'
