@@ -145,7 +145,7 @@
             json-response))
   (GET "/get/:build" [build] (redirect (str "http://cbfs-ext.hq.couchbase.com/builds/" build)))
   (GET "/filtercats" rq (json-response (cbfs-filtercats)))
-  (GET "/manifest/:build" [build] {:headers {"content-type" "text/xml"} 
+  (GET "/manifest/:build" [build] {:headers {"content-type" "text/xml"}
                                    :body (get-manifest build)})
   (GET "/manifest-info/:build" [build]  (json-response
                                           (-> build
@@ -181,7 +181,7 @@
       (wrap-session)))
 
 (defn -main [& args]
-  (if (= ["dev"] args) 
+  (if (= ["dev"] args)
     (appcfg :dev true)
     (appcfg))
   (start-http-server (wrap-ring-handler #'handler) {:port 3000}))
