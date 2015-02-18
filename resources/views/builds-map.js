@@ -12,7 +12,7 @@ function map(doc, meta)
         build.size = doc.length;
         build.ext  = build.filename.match(/\.([^\.]+)$/)[1];
         build.os   = extremap[build.ext];
-        
+
        if(build.ext == 'rpm')
            {
            if (build.filename.indexOf("centos6") > 0)     { build.os = "CentOS 6"; }
