@@ -21,3 +21,4 @@ Or just
 To run without building a .jar (the standalone .jar is for running
 without leiningen)
 
+Then, browse to http://localhost:3000
